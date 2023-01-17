@@ -3,23 +3,10 @@ import functools
 from typing import Iterable
 import numpy as np
 import pandas as pd
-import tabula
-import streamlit as st
 
 
-@st.experimental_memo
-def read_pdf():
-    dfs = tabula.read_pdf(
-        "R5ukeireyotesu1124_sasikae_1125_syuryo.pdf",
-        lattice=True,
-        pages="all",
-        pandas_options={"header": [0, 1]},
-    )
-    return dfs
-
-
-def combine_dataframes(dfs: Iterable[pd.DataFrame]):
-    def update(df: pd.DataFrame):
+def combine_dataframes(dfs: Iterable[pd.DataFrame]) -> pd.DataFrame:
+    def update(df: pd.DataFrame) -> pd.DataFrame:
         ward = df.iloc[2, 0].replace("\r", "")
         if ward == "厚別区":
             df.iloc[3, 1:15] = df.iloc[3, 0:14]
