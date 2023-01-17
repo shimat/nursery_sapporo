@@ -23,3 +23,10 @@ def read_csv(file_name: str) -> pd.DataFrame:
         dtypes[f"{a}歳児受入予定"] = dtypes[f"{a}歳児申込"] = "Int64"
     df = pd.read_csv(file_name, dtype=dtypes)
     return df
+
+
+# @st.experimental_memo
+def read_position_csv(file_name: str) -> pd.DataFrame:
+    df = pd.read_csv(file_name)
+    df = df.fillna(0)
+    return df
