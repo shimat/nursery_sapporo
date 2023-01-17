@@ -1,4 +1,5 @@
 import csv
+import functools
 import pandas as pd
 import numpy as np
 import streamlit as st
@@ -6,6 +7,19 @@ from data import read_pdf, combine_dataframes
 
 
 TITLE = "令和5年札幌市保育園申し込み状況"
+WARDS = (
+    "中央区",
+    "北区",
+    "東区",
+    "白石区",
+    "厚別区",
+    "豊平区",
+    "清田区",
+    "南区",
+    "西区",
+    "手稲区",
+)
+
 st.set_page_config(page_title=TITLE, layout="wide")
 st.title(TITLE)
 st.markdown("https://kosodate.city.sapporo.jp/mokuteki/azukeru/hoiku/ninka/7656.html")
@@ -16,42 +30,30 @@ df.to_csv("R5.csv", index=False, quoting=csv.QUOTE_NONNUMERIC, encoding="utf-8-s
 
 col1, col2 = st.columns(2)
 with col1:
-    ward = st.selectbox(
-        "区",
-        (
-            "全て",
-            "中央区",
-            "北区",
-            "東区",
-            "白石区",
-            "厚別区",
-            "豊平区",
-            "清田区",
-            "南区",
-            "西区",
-            "手稲区",
-        ),
-    )
+    wards = st.multiselect("区", WARDS)
 with col2:
-    age = st.selectbox("年齢", ("全て",) + tuple(f"{i}歳児" for i in range(6)))
+    ages = st.multiselect("年齢 (受入予定が1以上)", [f"{i}歳児" for i in range(6)])
 
-if ward != "全て":
-    df = df[df["区"] == ward]
-# if age != "全て":
-#    df = df[df[""]]
-st.dataframe(df)
+if wards:
+    df = df[df["区"].str.contains("|".join(wards), regex=True)]
+if ages:
+    ages = [f"{a}受入予定" for a in ages]
+    target_rows = functools.reduce(lambda x, y: x | y, [df[a] for a in ages])
+    df = df[target_rows > 0]
 
-# df = df.reindex(columns=column_names)
+st.text(f"ヒット: {len(df)}件")
 
-# columns = df.iloc[0, :].values
-# for c in range(6):
-#    columns[2 + c*2] = df.iloc[0, 2+c] + df.iloc[1, 2 + c*2]
-#    columns[2 + c*2+1] = df.iloc[0, 2+c] + df.iloc[1, 2 + c*2+1]
-# df.columns = columns
-# df.drop(index=df.index[[0, 1]], columns=df.columns[-1], inplace=True)
-# df = df.reindex(columns=["", "", ""])
 
-# for c in df.columns[2:]:
-#    df[c] = df[c].astype("Int64")
+def select_over_requested(x):
+    style_text = "background-color: rgb(255, 200, 200); font-weight:bold !important;"
+    style_df = pd.DataFrame("", index=x.index, columns=x.columns)
+    for age in range(0, 6):
+        mask = x[f"{age}歳児受入予定"] < x[f"{age}歳児申込"]
+        style_df.loc[mask, [f"{age}歳児受入予定", f"{age}歳児申込"]] = style_text
+    return style_df
 
-# df = df.reset_index().drop("index", axis=1)
+
+style = df.style.highlight_null(null_color="lightgray")
+style = style.apply(select_over_requested, axis=None)
+
+st.dataframe(style)

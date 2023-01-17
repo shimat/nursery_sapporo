@@ -39,7 +39,8 @@ def combine_dataframes(dfs: Iterable[pd.DataFrame]):
                 (f"{i}歳児受入予定", f"{i}歳児申込") for i in range(0, 6)
             )
         )
-        df = df.reset_index().drop("index", axis=1)
+        df.dropna(subset=["施設名"], inplace=True)
+        # df = df.reset_index().drop("index", axis=1)
         for c in df.columns[3:]:
             df[c] = np.floor(pd.to_numeric(df[c], errors="coerce")).astype("Int64")
 
@@ -49,4 +50,5 @@ def combine_dataframes(dfs: Iterable[pd.DataFrame]):
     df_combined = functools.reduce(
         lambda all, d: pd.concat([all, update(d)]), dfs, None
     )
+    df_combined = df_combined.reset_index().drop("index", axis=1)
     return df_combined
