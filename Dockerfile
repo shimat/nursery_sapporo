@@ -11,4 +11,4 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-RUN wget https://kosodate.city.sapporo.jp/material/files/group/1/R5ukeireyotesu1124_sasikae_1125_syuryo.pdf
+#RUN wget https://kosodate.city.sapporo.jp/material/files/group/1/R5ukeireyotesu1124_sasikae_1125_syuryo.pdf

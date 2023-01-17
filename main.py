@@ -1,3 +1,4 @@
+import csv
 import pandas as pd
 import numpy as np
 import streamlit as st
@@ -10,12 +11,35 @@ st.title(TITLE)
 st.markdown("https://kosodate.city.sapporo.jp/mokuteki/azukeru/hoiku/ninka/7656.html")
 
 dfs = read_pdf()
-df_combined = combine_dataframes(dfs)
+df = combine_dataframes(dfs)
+df.to_csv("R5.csv", index=False, quoting=csv.QUOTE_NONNUMERIC, encoding="utf-8-sig")
 
-# df.to_excel(f"{ward}.xlsx", index=None)
+col1, col2 = st.columns(2)
+with col1:
+    ward = st.selectbox(
+        "区",
+        (
+            "全て",
+            "中央区",
+            "北区",
+            "東区",
+            "白石区",
+            "厚別区",
+            "豊平区",
+            "清田区",
+            "南区",
+            "西区",
+            "手稲区",
+        ),
+    )
+with col2:
+    age = st.selectbox("年齢", ("全て",) + tuple(f"{i}歳児" for i in range(6)))
 
-
-st.dataframe(df_combined)
+if ward != "全て":
+    df = df[df["区"] == ward]
+# if age != "全て":
+#    df = df[df[""]]
+st.dataframe(df)
 
 # df = df.reindex(columns=column_names)
 

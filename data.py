@@ -34,7 +34,7 @@ def combine_dataframes(dfs: Iterable[pd.DataFrame]):
             df.drop(columns=df.columns[-1], inplace=True)
 
         df.insert(1, "区", ward)
-        df.columns = ["施設名", "住所", "区"] + list(
+        df.columns = ["施設名", "区", "住所"] + list(
             itertools.chain.from_iterable(
                 (f"{i}歳児受入予定", f"{i}歳児申込") for i in range(0, 6)
             )
@@ -42,6 +42,8 @@ def combine_dataframes(dfs: Iterable[pd.DataFrame]):
         df = df.reset_index().drop("index", axis=1)
         for c in df.columns[3:]:
             df[c] = np.floor(pd.to_numeric(df[c], errors="coerce")).astype("Int64")
+
+        df["施設名"] = df["施設名"].str.replace("\r\n|\n|\r", " / ", regex=True)
         return df
 
     df_combined = functools.reduce(
