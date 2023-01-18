@@ -1,2 +1,3 @@
 openpyxl==3.0.10
 streamlit==1.17.0
+folium==0.14.0

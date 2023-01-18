@@ -1,26 +1,25 @@
 import functools
 import pandas as pd
 import streamlit as st
-import pydeck as pdk
+import folium
+
+from const import WARDS, WARD_COLORS
 
 # from loader import read_pdf
 # from data_processing import combine_dataframes
 from loader import read_csv, read_position_csv
 
 
+def select_over_requested(x: pd.io.formats.style.Styler) -> pd.io.formats.style.Styler:
+    style_text = "background-color: rgb(255, 200, 200); font-weight:bold !important;"
+    style_df = pd.DataFrame("", index=x.index, columns=x.columns)
+    for age in range(6):
+        mask = (x[f"{age}歳児受入予定"] < x[f"{age}歳児申込"]) | x[f"{age}歳児受入予定"].eq(0)
+        style_df.loc[mask, [f"{age}歳児受入予定", f"{age}歳児申込"]] = style_text
+    return style_df
+
+
 TITLE = "令和5年札幌市保育園申し込み状況"
-WARDS = (
-    "中央区",
-    "北区",
-    "東区",
-    "白石区",
-    "厚別区",
-    "豊平区",
-    "清田区",
-    "南区",
-    "西区",
-    "手稲区",
-)
 
 st.set_page_config(page_title=TITLE, layout="wide")
 st.title(TITLE)
@@ -48,51 +47,21 @@ if ages:
 
 st.text(f"ヒット: {len(df)}件")
 
+map = folium.Map(location=(43.068665765741635, 141.35073227332813), zoom_start=11)
+for name, ward, addr, lat, lon in df[["施設名", "区", "住所", "lat", "lon"]].values:
+    if lat == 0 and lon == 0:
+        continue
+    folium.Marker(
+        location=(lat, lon),
+        tooltip=f"{name}<br/>{ward} {addr}",
+        icon=folium.Icon(icon="home", color=WARD_COLORS[ward]),
+        draggable=False,
+    ).add_to(map)
 
-def select_over_requested(x: pd.io.formats.style.Styler) -> pd.io.formats.style.Styler:
-    style_text = "background-color: rgb(255, 200, 200); font-weight:bold !important;"
-    style_df = pd.DataFrame("", index=x.index, columns=x.columns)
-    for age in range(6):
-        mask = x[f"{age}歳児受入予定"] < x[f"{age}歳児申込"]
-        style_df.loc[mask, [f"{age}歳児受入予定", f"{age}歳児申込"]] = style_text
-    return style_df
-
-
-ICON_DATA = {
-    "url": "https://upload.wikimedia.org/wikipedia/commons/c/c4/Projet_bi%C3%A8re_logo_v2.png",
-    "width": 305,
-    "height": 400,
-    "anchorY": 400,
-}
-df["icon_data"] = ""
-df.loc[:, ["icon_data"]] = ICON_DATA
-
+df.drop(columns=["lat", "lon"], inplace=True)
 style = df.style.highlight_null(color="lightgray")
 style = style.apply(select_over_requested, axis=None)
-
 st.dataframe(style)
 
-
-st.pydeck_chart(
-    pdk.Deck(
-        map_style="light",
-        initial_view_state=pdk.ViewState(
-            latitude=43.068665765741635,
-            longitude=141.35073227332813,
-            zoom=10,
-            pitch=0,
-        ),
-        layers=[
-            pdk.Layer(
-                "IconLayer",
-                data=df,
-                get_icon="icon_data",
-                get_size=4,
-                size_scale=15,
-                get_position=["lon", "lat"],
-                pickable=True,
-            ),
-        ],
-        tooltip={"text": "{text}"},
-    )
-)
+# https://qiita.com/sentencebird/items/478e7151e952798c2bb8
+st.components.v1.html(folium.Figure().add_child(map).render(), height=500)
