@@ -30,7 +30,8 @@ def create_markers(
 
     if mode == "申込超過":
         conditions = functools.reduce(
-            lambda x, y: x | y,
+            # 年齢無選択なら、どこか空いていればよい(AND)、選択があればそれら全部が空いているか調べる
+            lambda x, y: x & y if selected_ages == range(6) else x | y,
             [
                 df[f"{age}歳児受入予定"].isna()
                 | df[f"{age}歳児受入予定"].eq(0)

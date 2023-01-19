@@ -2,5 +2,7 @@
     "python.linting.flake8Enabled": true,
     "python.linting.enabled": true,
     "editor.defaultFormatter": "ms-python.black-formatter",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "python.analysis.inlayHints.functionReturnTypes": true,
+    "python.analysis.inlayHints.variableTypes": true
 }
