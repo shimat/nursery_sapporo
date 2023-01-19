@@ -16,7 +16,7 @@ def read_pdf(file_name: str) -> list[pd.DataFrame]:
     return dfs
 
 
-@st.experimental_memo
+# @st.experimental_memo
 def read_csv(file_name: str) -> pd.DataFrame:
     dtypes = {}
     for a in range(6):
@@ -27,6 +27,6 @@ def read_csv(file_name: str) -> pd.DataFrame:
 
 # @st.experimental_memo
 def read_position_csv(file_name: str) -> pd.DataFrame:
-    df = pd.read_csv(file_name)
+    df = pd.read_csv(file_name, usecols=("Index", "lat", "lon"))
     df = df.fillna(0)
     return df
