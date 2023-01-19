@@ -30,7 +30,7 @@ def create_markers(
 
     if mode == "申込超過":
         conditions = functools.reduce(
-            lambda x, y: x & y,
+            lambda x, y: x | y,
             [
                 df[f"{age}歳児受入予定"].isna()
                 | df[f"{age}歳児受入予定"].eq(0)
@@ -38,7 +38,7 @@ def create_markers(
                 for age in selected_ages
             ],
         )
-        df["over"] = np.where(conditions, 1, 0)
+        df.loc[:, "over"] = np.where(conditions, 1, 0)
 
     for index, row in df.iterrows():
         tooltip_text = popup_text = f"""
@@ -87,7 +87,7 @@ col1, col2 = st.columns(2)
 with col1:
     wards = st.multiselect("区", WARDS)
 with col2:
-    ages = st.multiselect("年齢 (受入予定が1以上)", [f"{i}歳児" for i in range(6)])
+    ages = st.multiselect("年齢 (受入予定が1人以上)", [f"{i}歳児" for i in range(6)])
 
 if wards:
     df = df[df["区"].str.contains("|".join(wards), regex=True)]
