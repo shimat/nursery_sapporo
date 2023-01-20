@@ -23,7 +23,9 @@ def select_over_requested(x: pd.io.formats.style.Styler) -> pd.io.formats.style.
 
 
 # 座標に従って保育園の位置のマーカーを生成
-def create_markers(df: pd.DataFrame, mode: str, selected_ages: Sequence[int]) -> Iterable[folium.Marker]:
+def create_markers(
+    df: pd.DataFrame, mode: str, selected_ages: Sequence[int]
+) -> Iterable[folium.Marker]:
     def make_li(row: pd.Series, age: int) -> str:
         requests, capacity = row[f"{age}歳児申込"], row[f"{age}歳児受入予定"]
         if requests is pd.NA or capacity is pd.NA:
@@ -38,7 +40,9 @@ def create_markers(df: pd.DataFrame, mode: str, selected_ages: Sequence[int]) ->
             # 年齢無選択なら、どこか空いていればよい(AND)、選択があればそれら全部が空いているか調べる
             lambda x, y: x & y if selected_ages == range(6) else x | y,
             [
-                df[f"{age}歳児受入予定"].isna() | df[f"{age}歳児受入予定"].eq(0) | (df[f"{age}歳児受入予定"] <= df[f"{age}歳児申込"])
+                df[f"{age}歳児受入予定"].isna()
+                | df[f"{age}歳児受入予定"].eq(0)
+                | (df[f"{age}歳児受入予定"] <= df[f"{age}歳児申込"])
                 for age in selected_ages
             ],
         )
