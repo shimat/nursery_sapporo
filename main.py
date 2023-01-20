@@ -100,13 +100,6 @@ if ages:
     target_rows = functools.reduce(lambda x, y: x | y, [df[a] for a in ages])
     df = df[target_rows > 0]
 
-st.text(f"ヒット: {len(df)}件")
-
-df_show = df.drop(columns=["lat", "lon"])
-style = df_show.style.highlight_null(color="lightgray")
-style = style.apply(select_over_requested, axis=None)
-st.dataframe(style)
-
 color_method = st.radio("色分け", ("区ごと", "申込超過"), horizontal=True)
 
 map = folium.Map(location=(43.068665765741635, 141.35073227332813), zoom_start=11)
@@ -116,3 +109,10 @@ for marker in create_markers(df, color_method, ages_int):
 
 # https://qiita.com/sentencebird/items/478e7151e952798c2bb8
 st.components.v1.html(folium.Figure().add_child(map).render(), height=500)
+
+st.text(f"ヒット: {len(df)}件")
+
+df_show = df.drop(columns=["lat", "lon"])
+style = df_show.style.highlight_null(color="lightgray")
+style = style.apply(select_over_requested, axis=None)
+st.dataframe(style)
